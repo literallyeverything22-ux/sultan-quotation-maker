@@ -27,6 +27,7 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 0, task 3: Added `.env.example` with all seven secret names from Architecture.md section 7 and no real values.
 - [x] Phase 0, task 4: Added `public/manifest.webmanifest` and sporty black-and-orange app icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/icon.svg`) for home screen installation.
 - [x] Phase 0, task 5 (code part): Created `supabase/schema.sql` with the three tables (`settings`, `quotations`, `counters`), atomic number counter helper, and Row-Level Security enabled.
+- [x] Phase 0, task 5 (Supabase live check): Munavar created the Supabase project, ran `supabase/schema.sql`, and configured `.env.local`; verified live connection to `settings` (1 default row), `quotations` (0 rows), and `counters` (1 default row).
 - [x] Phase 0 quality checks: Verified `npm run typecheck`, `npm run lint`, `npm run test` (3/3 passed), and `npm run build` all pass with zero errors.
 - [x] Pushed Phase 0 project to private GitHub repository (`https://github.com/RevivedSoul37/sultan-quotation-maker`).
 
@@ -46,7 +47,7 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - Check current free-plan limits and the current Gemini model name before Phase 9.
 
 ## Notes for Munavar's setup (done outside the code)
-- [ ] Supabase project created
+- [x] Supabase project created
 - [ ] Gemini API key created in Google AI Studio
 - [ ] GitHub account and free host ready
 - [ ] Staff PIN and owner PIN chosen (entered only in the host's secret settings)
