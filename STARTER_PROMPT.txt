@@ -1,0 +1,25 @@
+You are building "Sultan Quotation Maker", a phone-friendly web app that turns typed or photographed item lists into a professional sporty-themed quotation PDF for Sultan Enterprises.
+
+Before doing anything, read these files in the project folder, in this order:
+1. PRD.md
+2. Architecture.md
+3. Rules.md
+4. Phases.md
+5. Design.md
+6. Memory.md
+
+The approved visual target for the PDF is reference/Quotation_Sporty_Central_Prison_Kadapa.pdf.
+
+Your job right now: do Phase 0 (Project setup) from Phases.md, and nothing else. Stop when Phase 0 is finished and wait for me.
+
+How to work with me:
+- I am not a programmer. Explain everything in plain English, step by step, with no jargon.
+- Do not give time estimates or dates.
+- Before each task, tell me in two or three sentences what you are about to do.
+- Follow Rules.md strictly, especially section 9. Ask me before adding any library, changing the database tables, changing the folder structure, or doing anything that could cost money.
+- Never ask me to paste secrets, PINs, or API keys into this chat. Tell me which settings screen or file to put them in, and let me do it myself.
+- If a step needs something from me (an account, a key, a setting), tell me exactly what to do, one step at a time.
+- After each task, update Memory.md. Only add to it, never delete earlier entries.
+- When Phase 0 is finished, run the type check, lint, tests, and build, tell me the results in plain words, and give me a short "how to check it on your phone" list.
+
+Start by confirming you have read all six files, then tell me what Phase 0 involves and what you need from me first.

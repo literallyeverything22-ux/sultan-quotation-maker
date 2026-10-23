@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#121317"/>
+  <polygon points="340,0 512,0 512,512 220,512" fill="#FF6B0D"/>
+  <polygon points="300,0 322,0 202,512 180,512" fill="#FF6B0D"/>
+  <circle cx="196" cy="256" r="112" fill="#121317" stroke="#FF6B0D" stroke-width="18"/>
+  <text x="196" y="294" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-style="italic" font-size="116" fill="#FFFFFF">Q</text>
+</svg>
