@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 0 (Project setup) — all code, icons, database SQL, and quality checks finished; ready for Munavar's Supabase and free host setup
-- **File or task being worked on right now:** Waiting for Munavar to check Phase 0 and complete the external Supabase / hosting steps
-- **Next task:** Phase 1, task 1 (Build the PIN screen with a large number pad) once Munavar confirms Phase 0 is done
+- **Current phase:** Phase 0 (Project setup) — COMPLETED and verified on Munavar's phone (`vercel.app`)
+- **File or task being worked on right now:** Waiting for Munavar's approval to start Phase 1 (PIN access)
+- **Next task:** Phase 1, task 1 (Build the PIN screen with a large number pad)
 
 ## Completed
 (nothing yet)
@@ -31,6 +31,7 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 0 quality checks: Verified `npm run typecheck`, `npm run lint`, `npm run test` (3/3 passed), and `npm run build` all pass with zero errors.
 - [x] Pushed Phase 0 project to private GitHub repository (`https://github.com/RevivedSoul37/sultan-quotation-maker`).
 - [x] Pushed Phase 0 project to `https://github.com/literallyeverything22-ux/sultan-quotation-maker.git`.
+- [x] Phase 0, task 6: Deployed on Vercel and verified on Munavar's mobile phone (Home, New Quotation, and Business Settings screens all working).
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.
@@ -50,7 +51,7 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 ## Notes for Munavar's setup (done outside the code)
 - [x] Supabase project created
 - [ ] Gemini API key created in Google AI Studio
-- [ ] GitHub account and free host ready
+- [x] GitHub account and free host ready
 - [ ] Staff PIN and owner PIN chosen (entered only in the host's secret settings)
 - [ ] Signature and stamp original photo ready
 - [ ] Two or three real handwritten list photos ready for testing
