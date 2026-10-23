@@ -1,11 +1,14 @@
 import Link from "next/link";
+import { requirePageSession } from "@/lib/auth/session";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await requirePageSession("owner", "/settings");
+
   return (
     <div className="flex flex-1 flex-col justify-between gap-6">
       <div className="space-y-2">
         <p className="text-xs font-bold uppercase tracking-widest text-sultan-orange">
-          OWNER ONLY
+          OWNER ONLY — UNLOCKED
         </p>
         <h1 className="text-2xl font-bold italic text-sultan-ink">
           Business Settings

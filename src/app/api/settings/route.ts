@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import type { ApiResponse } from "@/types/quotation";
+import { requireApiSession } from "@/lib/auth/session";
 
 export async function GET(): Promise<NextResponse<ApiResponse<null>>> {
+  const auth = await requireApiSession("owner");
+  if (!auth.allowed) return auth.response;
+
   return NextResponse.json(
     {
       ok: false,
@@ -13,6 +17,9 @@ export async function GET(): Promise<NextResponse<ApiResponse<null>>> {
 }
 
 export async function PUT(): Promise<NextResponse<ApiResponse<null>>> {
+  const auth = await requireApiSession("owner");
+  if (!auth.allowed) return auth.response;
+
   return NextResponse.json(
     {
       ok: false,

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requirePageSession } from "@/lib/auth/session";
 
 interface QuotationDetailPageProps {
   params: Promise<{ id: string }>;
@@ -8,6 +9,7 @@ export default async function QuotationDetailPage({
   params,
 }: QuotationDetailPageProps) {
   const { id } = await params;
+  await requirePageSession("staff", `/q/${id}`);
 
   return (
     <div className="flex flex-1 flex-col justify-between gap-6">

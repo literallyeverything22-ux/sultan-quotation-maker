@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { requirePageSession } from "@/lib/auth/session";
 
-export default function NewQuotationPage() {
+export default async function NewQuotationPage() {
+  await requirePageSession("staff", "/new");
+
   return (
     <div className="flex flex-1 flex-col justify-between gap-6">
       <div className="space-y-2">

@@ -1,23 +1,28 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { PinPad } from "@/components/PinPad";
+import { getSessionFromCookies } from "@/lib/auth/session";
 
-export default function PinPage() {
-  return (
-    <div className="flex flex-1 flex-col justify-between gap-6">
-      <div className="space-y-2">
-        <p className="text-xs font-bold uppercase tracking-widest text-sultan-orange">
-          ACCESS
-        </p>
-        <h1 className="text-2xl font-bold italic text-sultan-ink">Enter PIN</h1>
-        <p className="text-base text-sultan-grey">
-          PIN protection will be enabled in Phase 1.
-        </p>
-      </div>
-      <Link
-        href="/"
-        className="flex min-h-[48px] w-full items-center justify-center rounded-xl border border-sultan-black bg-sultan-white px-4 py-3 text-base font-bold text-sultan-black"
-      >
-        Back to Home
-      </Link>
-    </div>
-  );
+interface PinPageProps {
+  searchParams: Promise<{ mode?: string; next?: string }>;
+}
+
+export default async function PinPage({ searchParams }: PinPageProps) {
+  const resolved = await searchParams;
+  const mode = resolved.mode === "owner" ? "owner" : "staff";
+  const redirectTo =
+    typeof resolved.next === "string" && resolved.next.startsWith("/")
+      ? resolved.next
+      : mode === "owner"
+        ? "/settings"
+        : "/";
+
+  const session = await getSessionFromCookies();
+  if (mode === "owner" && session?.role === "owner") {
+    redirect(redirectTo);
+  }
+  if (mode === "staff" && session) {
+    redirect(redirectTo);
+  }
+
+  return <PinPad mode={mode} redirectTo={redirectTo} />;
 }

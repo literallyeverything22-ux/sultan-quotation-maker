@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 0 (Project setup) — COMPLETED and verified on Munavar's phone (`vercel.app`)
-- **File or task being worked on right now:** Waiting for Munavar's approval to start Phase 1 (PIN access)
-- **Next task:** Phase 1, task 1 (Build the PIN screen with a large number pad)
+- **Current phase:** Phase 1 (PIN access) — all 5 tasks and tests finished; waiting for Munavar to set `STAFF_PIN_HASH`, `OWNER_PIN_HASH`, and `SESSION_SECRET` and test on his phone
+- **File or task being worked on right now:** Waiting for Munavar to verify Phase 1 on his phone
+- **Next task:** Phase 2, task 1 (Settings screen with business and bank details) once Munavar confirms Phase 1
 
 ## Completed
 (nothing yet)
@@ -32,6 +32,11 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Pushed Phase 0 project to private GitHub repository (`https://github.com/RevivedSoul37/sultan-quotation-maker`).
 - [x] Pushed Phase 0 project to `https://github.com/literallyeverything22-ux/sultan-quotation-maker.git`.
 - [x] Phase 0, task 6: Deployed on Vercel and verified on Munavar's mobile phone (Home, New Quotation, and Business Settings screens all working).
+- [x] Phase 1, task 1: Built the PIN lock screen (`src/components/PinPad.tsx` and `src/app/pin/page.tsx`) with black background, orange digit dots, single-shake error animation, and 72px round number keys.
+- [x] Phase 1, task 2: Implemented server PIN verification and signed httpOnly session cookies (`src/lib/auth/pin.ts`, `src/lib/auth/session.ts`, `src/app/api/auth/route.ts`).
+- [x] Phase 1, task 3: Implemented 5-wrong-tries temporary lock (memory + signed cookie state so serverless restarts cannot bypass the lock).
+- [x] Phase 1, task 4: Added Owner PIN verification (`mode="owner"`) for unlocking the Business Settings area.
+- [x] Phase 1, task 5: Protected every page (`page.tsx`, `new/page.tsx`, `q/[id]/page.tsx`, `settings/page.tsx`) and every server API route (`read-items`, `quotations`, `quotations/[id]`, `next-number`, `settings`), and added unit tests for PIN verification, 5-try lockout, and signed session tokens.
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.
