@@ -108,13 +108,14 @@ export async function verifyPinAgainstHashes(
   | { valid: true; role: SessionRole }
   | { valid: false; reason: "not_configured" | "wrong_pin" }
 > {
-  // Normalize hashes in case environment variable escaping modified '$' characters
+  // Normalize hashes in case environment variable escaping or quotes were included
   const rawStaffHash = (
     hashes?.staffPinHash ??
     process.env.STAFF_PIN_HASH ??
     ""
   )
     .trim()
+    .replace(/^['"]|['"]$/g, "")
     .replace(/\\\$/g, "$");
   const rawOwnerHash = (
     hashes?.ownerPinHash ??
@@ -122,6 +123,7 @@ export async function verifyPinAgainstHashes(
     ""
   )
     .trim()
+    .replace(/^['"]|['"]$/g, "")
     .replace(/\\\$/g, "$");
 
   if (mode === "owner") {
