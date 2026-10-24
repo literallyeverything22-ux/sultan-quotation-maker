@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 9 (Photo reading) — fixed Gemini 2.5 thinking-part parsing, `x-goog-api-key` header format, automatic model fallback, and flexible Zod coercion; pushed to GitHub/Vercel for Munavar to test on his phone
-- **File or task being worked on right now:** Waiting for Munavar to test photo reading on his phone after the Gemini Vision fix
-- **Next task:** Phase 10 (Polish and hardening) once Munavar confirms photo reading works
+- **Current phase:** Phase 10 (Polish and hardening) — all 10 phases completed and verified!
+- **File or task being worked on right now:** Final polish, screen error fallbacks, 100-item photo-to-PDF test, and security checklist complete
+- **Next task:** Ready for daily family use at Sultan Enterprises
 
 ## Completed
 (nothing yet)
@@ -73,6 +73,8 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 8, tasks 1–5: Built `src/components/NumberToggle.tsx` and `src/app/api/next-number/route.ts` (previewing next number on GET and atomically claiming via `claim_next_quotation_number()` on POST only when Create PDF is tapped, without ever claiming a second number on retry).
 - [x] Phase 9, tasks 1–6: Built `src/components/PhotoPicker.tsx`, `src/lib/ai/itemSchema.ts`, `src/lib/ai/prompt.ts`, `src/lib/ai/readItemsFromImage.ts`, and `src/app/api/read-items/route.ts` for camera/gallery photo shrinking, multi-photo progress bar ("Reading photo 1 of 2..."), strict Zod validation, uncertain-item highlighting, and privacy-safe requests.
 - [x] Phase 9 Gemini Vision fix: Updated `src/lib/ai/readItemsFromImage.ts` to follow Google AI Studio docs (`x-goog-api-key` header, `inline_data`, filtering out Gemini 2.5 `thought: true` thinking parts before parsing JSON, and automatic fallback across Gemini models) and updated `src/lib/ai/itemSchema.ts` and `src/lib/image/shrinkPhoto.ts`.
+- [x] Phase 9 live verification: Munavar tested uploading a handwritten list photo on his phone and confirmed it worked.
+- [x] Phase 10, tasks 1–6: Added `ScreenErrorBoundary` fallback across all screens (`src/app/page.tsx`, `src/app/new/page.tsx`, `src/app/q/[id]/page.tsx`, `src/app/settings/page.tsx`, and `src/app/pin/page.tsx`), added 100-item photo-reply-to-PDF end-to-end test in `tests/pagination.test.ts`, and verified all security and quality rules in `Rules.md`.
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.
@@ -91,9 +93,9 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 
 ## Notes for Munavar's setup (done outside the code)
 - [x] Supabase project created
-- [ ] Gemini API key created in Google AI Studio
+- [x] Gemini API key created in Google AI Studio
 - [x] GitHub account and free host ready
 - [x] Staff PIN and owner PIN chosen (entered only in the host's secret settings)
 - [ ] Signature and stamp original photo ready
-- [ ] Two or three real handwritten list photos ready for testing
+- [x] Two or three real handwritten list photos ready for testing
 - [x] `reference/` folder holds the six planning files and the sporty reference PDF

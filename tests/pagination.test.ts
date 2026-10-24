@@ -2,6 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { PDFDocument } from "pdf-lib";
+import {
+  aiItemsReplySchema,
+  mapAiItemsToQuotationItems,
+} from "@/lib/ai/itemSchema";
 import { setCachedLiberationFontBytes } from "@/lib/pdf/fonts";
 import {
   measureQuotationRow,
@@ -122,5 +126,35 @@ describe("paginateQuotationItems and text wrapping", () => {
         expect(loaded.getPageCount()).toBeLessThanOrEqual(9);
       }
     }
+  });
+
+  it("converts a 100-item photo reading reply end-to-end into a multi-page sporty PDF", async () => {
+    const rawPhotoReply = {
+      items: Array.from({ length: 100 }, (_, i) => ({
+        name: `Sports Equipment Item #${i + 1} (${i % 2 === 0 ? "Volleyball" : "Carrom Board"})`,
+        quantity: (i % 4) + 1,
+        unitPriceRupees: 250 + (i % 10) * 75,
+        note: i % 5 === 0 ? "Tournament grade" : "",
+        confidence: "high",
+      })),
+    };
+
+    const parsed = aiItemsReplySchema.safeParse(rawPhotoReply);
+    expect(parsed.success).toBe(true);
+    const items = mapAiItemsToQuotationItems(parsed.data?.items ?? []);
+    expect(items).toHaveLength(100);
+
+    const pdfBytes = await buildQuotationPdf({
+      buyerName: "District Sports Authority",
+      buyerAddress: "Kadapa, Andhra Pradesh",
+      quotationDate: "2026-10-24",
+      quotationNumber: "SE-0010",
+      items: items ?? [],
+      settings: DEFAULT_BUSINESS_SETTINGS,
+    });
+
+    const loaded = await PDFDocument.load(pdfBytes);
+    expect(loaded.getPageCount()).toBeGreaterThanOrEqual(7);
+    expect(loaded.getPageCount()).toBeLessThanOrEqual(9);
   });
 });

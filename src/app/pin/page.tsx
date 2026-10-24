@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { ScreenErrorBoundary } from "@/components/BuyerForm";
 import { PinPad } from "@/components/PinPad";
 import { getSessionFromCookies } from "@/lib/auth/session";
 
@@ -24,5 +25,9 @@ export default async function PinPage({ searchParams }: PinPageProps) {
     redirect(redirectTo);
   }
 
-  return <PinPad mode={mode} redirectTo={redirectTo} />;
+  return (
+    <ScreenErrorBoundary screenName="PIN Lock Screen">
+      <PinPad mode={mode} redirectTo={redirectTo} />
+    </ScreenErrorBoundary>
+  );
 }

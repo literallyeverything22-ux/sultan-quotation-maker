@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ApiResponse, Quotation, QuotationItem } from "@/types/quotation";
-import { BuyerForm } from "@/components/BuyerForm";
+import { BuyerForm, ScreenErrorBoundary } from "@/components/BuyerForm";
 import { ItemList } from "@/components/ItemList";
 import { NumberToggle } from "@/components/NumberToggle";
 import { PdfPreview } from "@/components/PdfPreview";
@@ -182,7 +182,8 @@ export default function QuotationDetailPage({
   }
 
   return (
-    <div className="flex flex-1 flex-col justify-between gap-5">
+    <ScreenErrorBoundary screenName="Edit Quotation">
+      <div className="flex flex-1 flex-col justify-between gap-5">
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-2">
           <div>
@@ -264,6 +265,7 @@ export default function QuotationDetailPage({
         isBuilding={isSaving}
         onCreatePdf={() => void handleSaveAndCreatePdf()}
       />
-    </div>
+      </div>
+    </ScreenErrorBoundary>
   );
 }

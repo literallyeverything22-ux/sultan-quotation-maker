@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ApiResponse, Quotation } from "@/types/quotation";
+import { ScreenErrorBoundary } from "@/components/BuyerForm";
 import { createEmptyDraft, saveDraftToPhone } from "@/lib/draft/draftStore";
 import { formatMoneyWithRs } from "@/lib/money/formatMoney";
 import { formatQuotationDisplayDate } from "@/lib/pdf/layout";
@@ -76,7 +77,8 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col justify-between gap-6">
+    <ScreenErrorBoundary screenName="Home Screen">
+      <div className="flex flex-1 flex-col justify-between gap-6">
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -196,6 +198,7 @@ export default function HomePage() {
           + New Quotation
         </Link>
       </div>
-    </div>
+      </div>
+    </ScreenErrorBoundary>
   );
 }
