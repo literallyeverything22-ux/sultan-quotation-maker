@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 1 (PIN access) — all 5 tasks and tests finished; waiting for Munavar to set `STAFF_PIN_HASH`, `OWNER_PIN_HASH`, and `SESSION_SECRET` and test on his phone
-- **File or task being worked on right now:** Waiting for Munavar to verify Phase 1 on his phone
-- **Next task:** Phase 2, task 1 (Settings screen with business and bank details) once Munavar confirms Phase 1
+- **Current phase:** Phase 1 (PIN access) — COMPLETED and verified live on `https://sultan-quotation-maker.vercel.app`
+- **File or task being worked on right now:** Waiting for Munavar's approval to start Phase 2 (Business settings)
+- **Next task:** Phase 2, task 1 (Settings screen with: company name, tagline, address lines, phone numbers, GSTIN, bank details, quotation number prefix)
 
 ## Completed
 (nothing yet)
@@ -37,6 +37,7 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 1, task 3: Implemented 5-wrong-tries temporary lock (memory + signed cookie state so serverless restarts cannot bypass the lock).
 - [x] Phase 1, task 4: Added Owner PIN verification (`mode="owner"`) for unlocking the Business Settings area.
 - [x] Phase 1, task 5: Protected every page (`page.tsx`, `new/page.tsx`, `q/[id]/page.tsx`, `settings/page.tsx`) and every server API route (`read-items`, `quotations`, `quotations/[id]`, `next-number`, `settings`), and added unit tests for PIN verification, 5-try lockout, and signed session tokens.
+- [x] Phase 1 live verification: Verified on `https://sultan-quotation-maker.vercel.app` that unauthenticated requests redirect to `/pin`, wrong PIN is refused, Staff PIN opens the home screen (`STAFF ACCESS`) and is blocked from `/settings`, and Owner PIN unlocks `/settings` (`OWNER ONLY — UNLOCKED`).
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.
@@ -57,7 +58,7 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Supabase project created
 - [ ] Gemini API key created in Google AI Studio
 - [x] GitHub account and free host ready
-- [ ] Staff PIN and owner PIN chosen (entered only in the host's secret settings)
+- [x] Staff PIN and owner PIN chosen (entered only in the host's secret settings)
 - [ ] Signature and stamp original photo ready
 - [ ] Two or three real handwritten list photos ready for testing
 - [x] `reference/` folder holds the six planning files and the sporty reference PDF
