@@ -9,10 +9,15 @@ import {
 
 interface TotalBarProps {
   items: QuotationItem[];
+  isBuilding?: boolean;
   onCreatePdf?: () => void;
 }
 
-export function TotalBar({ items, onCreatePdf }: TotalBarProps) {
+export function TotalBar({
+  items,
+  isBuilding = false,
+  onCreatePdf,
+}: TotalBarProps) {
   const totalPaise = calculateGrandTotalPaise(items);
   const words = amountInWords(totalPaise);
 
@@ -20,7 +25,7 @@ export function TotalBar({ items, onCreatePdf }: TotalBarProps) {
     (item) => item.unitPricePaise === null || item.unitPricePaise <= 0
   ).length;
 
-  const canCreatePdf = items.length > 0 && missingPriceCount === 0;
+  const canCreatePdf = items.length > 0 && missingPriceCount === 0 && !isBuilding;
 
   return (
     <section className="sticky bottom-0 z-20 -mx-4 border-t-2 border-sultan-black bg-sultan-white px-4 pb-4 pt-3 shadow-lg">
@@ -60,11 +65,13 @@ export function TotalBar({ items, onCreatePdf }: TotalBarProps) {
           onClick={onCreatePdf}
           className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-sultan-black px-4 py-3 text-base font-bold text-sultan-white active:opacity-90 disabled:opacity-40"
         >
-          {items.length === 0
-            ? "Add Items to Create PDF"
-            : missingPriceCount > 0
-              ? "Fix Missing Prices First"
-              : "Create PDF (Connected in Phase 6)"}
+          {isBuilding
+            ? "Saving & Drawing PDF..."
+            : items.length === 0
+              ? "Add Items to Create PDF"
+              : missingPriceCount > 0
+                ? "Fix Missing Prices First"
+                : "Create PDF"}
         </button>
       </div>
     </section>

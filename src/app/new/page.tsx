@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { QuotationItem } from "@/types/quotation";
+import type { ApiResponse, Quotation, QuotationItem } from "@/types/quotation";
 import { BuyerForm } from "@/components/BuyerForm";
 import { ItemList } from "@/components/ItemList";
 import { PdfPreview } from "@/components/PdfPreview";
@@ -28,8 +28,13 @@ export default function NewQuotationPage() {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [confirmClear, setConfirmClear] = useState<boolean>(false);
   const [buildRequestCounter, setBuildRequestCounter] = useState<number>(0);
+  const [savedQuotationId, setSavedQuotationId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveNotice, setSaveNotice] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
-  // Check session and load saved draft from the phone when opening the screen
   useEffect(() => {
     void fetch("/api/auth", { cache: "no-store" })
       .then((res) => {
@@ -52,7 +57,6 @@ export default function NewQuotationPage() {
     setIsLoaded(true);
   }, [router]);
 
-  // Auto-save every change to the phone's local draft
   useEffect(() => {
     if (!isLoaded) return;
     saveDraftToPhone({
@@ -99,7 +103,57 @@ export default function NewQuotationPage() {
     setQuotationDate(fresh.quotationDate);
     setNumberEnabled(fresh.numberEnabled);
     setItems([]);
+    setSavedQuotationId(null);
+    setSaveNotice(null);
     setConfirmClear(false);
+  };
+
+  const handleCreatePdfAndSave = async () => {
+    setBuildRequestCounter((prev) => prev + 1);
+    setIsSaving(true);
+    setSaveNotice(null);
+
+    try {
+      const endpoint = savedQuotationId
+        ? `/api/quotations/${savedQuotationId}`
+        : "/api/quotations";
+      const method = savedQuotationId ? "PUT" : "POST";
+
+      const res = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          buyerName: buyerName.trim() || "The Superintendent",
+          buyerAddress: buyerAddress.trim(),
+          quotationDate,
+          items: items.map((it) => ({
+            ...it,
+            unitPricePaise: it.unitPricePaise ?? 0,
+          })),
+        }),
+      });
+
+      const payload = (await res.json()) as ApiResponse<Quotation>;
+      if (payload.ok) {
+        setSavedQuotationId(payload.data.id);
+        setSaveNotice({
+          type: "success",
+          text: "Quotation saved to history and PDF ready below.",
+        });
+      } else {
+        setSaveNotice({
+          type: "error",
+          text: payload.message,
+        });
+      }
+    } catch {
+      setSaveNotice({
+        type: "error",
+        text: "Could not save to cloud right now, but your PDF and phone draft are ready.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -135,6 +189,19 @@ export default function NewQuotationPage() {
           </div>
         </div>
 
+        {saveNotice ? (
+          <div
+            role="status"
+            className={`rounded-xl border-l-4 p-3 text-sm font-bold ${
+              saveNotice.type === "error"
+                ? "border-sultan-errorRed bg-sultan-lightGrey text-sultan-errorRed"
+                : "border-sultan-orange bg-sultan-lightGrey text-sultan-ink"
+            }`}
+          >
+            {saveNotice.text}
+          </div>
+        ) : null}
+
         <BuyerForm
           buyerName={buyerName}
           buyerAddress={buyerAddress}
@@ -160,7 +227,8 @@ export default function NewQuotationPage() {
 
       <TotalBar
         items={items}
-        onCreatePdf={() => setBuildRequestCounter((prev) => prev + 1)}
+        isBuilding={isSaving}
+        onCreatePdf={() => void handleCreatePdfAndSave()}
       />
     </div>
   );

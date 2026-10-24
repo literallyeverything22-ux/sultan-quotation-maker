@@ -1,7 +1,7 @@
 // Server-only Supabase database and private storage helper.
 // Uses SUPABASE_URL and SUPABASE_SERVICE_KEY on the server only. Never import in client components.
 
-import type { BusinessSettings } from "@/types/quotation";
+import type { BusinessSettings, Quotation, QuotationItem } from "@/types/quotation";
 
 const SIGNATURE_BUCKET = "signatures";
 const SIGNATURE_OBJECT_PATH = "owner-signature.png";
@@ -24,130 +24,77 @@ interface SettingsRow {
   footer_slogan: string;
 }
 
-function getSupabaseConfig(): { baseUrl: string; serviceKey: string } {
-  const baseUrl = (process.env.SUPABASE_URL ?? "")
-    .trim()
-    .replace(/^['"]|['"]$/g, "")
-    .replace(/\/$/, "");
-  const serviceKey = (process.env.SUPABASE_SERVICE_KEY ?? "")
-    .trim()
-    .replace(/^['"]|['"]$/g, "");
+interface QuotationRow {
+  id: string;
+  quotation_number: string | null;
+  buyer_name: string;
+  buyer_address: string;
+  quotation_date: string;
+  items: QuotationItem[];
+  total_paise: number;
+  created_at: string;
+}
 
-  if (!baseUrl || !serviceKey) {
-    throw new Error("Supabase server configuration is missing.");
-  }
-
+export function getSupabaseConfig(): { baseUrl: string; serviceKey: string } {
+  const baseUrl = (process.env.SUPABASE_URL ?? "").trim().replace(/^['"]|['"]$/g, "").replace(/\/$/, "");
+  const serviceKey = (process.env.SUPABASE_SERVICE_KEY ?? "").trim().replace(/^['"]|['"]$/g, "");
+  if (!baseUrl || !serviceKey) throw new Error("Supabase server configuration is missing.");
   return { baseUrl, serviceKey };
 }
 
-function getAuthHeaders(
-  serviceKey: string,
-  extra?: Record<string, string>
-): Record<string, string> {
-  return {
-    apikey: serviceKey,
-    Authorization: `Bearer ${serviceKey}`,
-    ...extra,
-  };
+export function getAuthHeaders(serviceKey: string, extra?: Record<string, string>): Record<string, string> {
+  return { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, ...extra };
 }
 
-/**
- * Ensures the private "signatures" bucket exists in Supabase Storage before uploading.
- */
-async function ensureSignatureBucket(
-  baseUrl: string,
-  serviceKey: string
-): Promise<void> {
-  const checkRes = await fetch(
-    `${baseUrl}/storage/v1/bucket/${SIGNATURE_BUCKET}`,
-    {
-      headers: getAuthHeaders(serviceKey),
-      cache: "no-store",
-    }
-  );
-
+async function ensureSignatureBucket(baseUrl: string, serviceKey: string): Promise<void> {
+  const checkRes = await fetch(`${baseUrl}/storage/v1/bucket/${SIGNATURE_BUCKET}`, {
+    headers: getAuthHeaders(serviceKey),
+    cache: "no-store",
+  });
   if (checkRes.status === 404 || checkRes.status === 400) {
     await fetch(`${baseUrl}/storage/v1/bucket`, {
       method: "POST",
-      headers: getAuthHeaders(serviceKey, {
-        "Content-Type": "application/json",
-      }),
-      body: JSON.stringify({
-        id: SIGNATURE_BUCKET,
-        name: SIGNATURE_BUCKET,
-        public: false,
-      }),
+      headers: getAuthHeaders(serviceKey, { "Content-Type": "application/json" }),
+      body: JSON.stringify({ id: SIGNATURE_BUCKET, name: SIGNATURE_BUCKET, public: false }),
     });
   }
 }
 
-/**
- * Downloads the stored signature PNG from private Supabase Storage and returns a data URL.
- */
-async function fetchSignatureDataUrl(
-  baseUrl: string,
-  serviceKey: string,
-  storagePath: string | null
-): Promise<string | null> {
+async function fetchSignatureDataUrl(baseUrl: string, serviceKey: string, storagePath: string | null): Promise<string | null> {
   if (!storagePath) return null;
-
   try {
     const res = await fetch(
-      `${baseUrl}/storage/v1/object/${SIGNATURE_BUCKET}/${encodeURIComponent(
-        storagePath
-      )}`,
-      {
-        headers: getAuthHeaders(serviceKey),
-        cache: "no-store",
-      }
+      `${baseUrl}/storage/v1/object/${SIGNATURE_BUCKET}/${encodeURIComponent(storagePath)}`,
+      { headers: getAuthHeaders(serviceKey), cache: "no-store" }
     );
     if (!res.ok) return null;
-    const arrayBuffer = await res.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
-    return `data:image/png;base64,${base64}`;
+    return `data:image/png;base64,${Buffer.from(await res.arrayBuffer()).toString("base64")}`;
   } catch {
     return null;
   }
 }
 
-/**
- * Uploads a transparent PNG data URL ("data:image/png;base64,...") to private Supabase Storage.
- */
-export async function uploadSignaturePngDataUrl(
-  dataUrl: string
-): Promise<string> {
+export async function uploadSignaturePngDataUrl(dataUrl: string): Promise<string> {
   const { baseUrl, serviceKey } = getSupabaseConfig();
   await ensureSignatureBucket(baseUrl, serviceKey);
 
   const prefix = "data:image/png;base64,";
-  const base64Part = dataUrl.startsWith(prefix)
-    ? dataUrl.slice(prefix.length)
-    : dataUrl;
+  const base64Part = dataUrl.startsWith(prefix) ? dataUrl.slice(prefix.length) : dataUrl;
   const pngBytes = Buffer.from(base64Part, "base64");
 
   const uploadRes = await fetch(
     `${baseUrl}/storage/v1/object/${SIGNATURE_BUCKET}/${SIGNATURE_OBJECT_PATH}`,
     {
       method: "POST",
-      headers: getAuthHeaders(serviceKey, {
-        "Content-Type": "image/png",
-        "x-upsert": "true",
-      }),
+      headers: getAuthHeaders(serviceKey, { "Content-Type": "image/png", "x-upsert": "true" }),
       body: pngBytes,
     }
   );
-
-  if (!uploadRes.ok) {
-    throw new Error("Could not save signature image to storage.");
-  }
-
+  if (!uploadRes.ok) throw new Error("Could not save signature image to storage.");
   return SIGNATURE_OBJECT_PATH;
 }
 
-function mapRowToSettings(
-  row: SettingsRow,
-  signatureDataUrl: string | null
-): BusinessSettings {
+function mapRowToSettings(row: SettingsRow, signatureDataUrl: string | null): BusinessSettings {
   return {
     companyName: row.company_name ?? "",
     tagline: row.tagline ?? "",
@@ -169,65 +116,36 @@ function mapRowToSettings(
   };
 }
 
-/**
- * Reads the single settings row (id = 1) from Supabase and loads the signature preview if stored.
- */
 export async function getBusinessSettings(): Promise<BusinessSettings> {
   const { baseUrl, serviceKey } = getSupabaseConfig();
-
-  const res = await fetch(
-    `${baseUrl}/rest/v1/settings?id=eq.1&select=*`,
-    {
-      headers: getAuthHeaders(serviceKey),
-      cache: "no-store",
-    }
-  );
-
-  if (!res.ok) {
-    throw new Error("Could not read business settings.");
-  }
+  const res = await fetch(`${baseUrl}/rest/v1/settings?id=eq.1&select=*`, {
+    headers: getAuthHeaders(serviceKey),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Could not read business settings.");
 
   const rows = (await res.json()) as SettingsRow[];
   const row = rows[0];
-
   if (!row) {
-    // Ensure the default row exists
     const insertRes = await fetch(`${baseUrl}/rest/v1/settings`, {
       method: "POST",
-      headers: getAuthHeaders(serviceKey, {
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-      }),
+      headers: getAuthHeaders(serviceKey, { "Content-Type": "application/json", Prefer: "return=representation" }),
       body: JSON.stringify({ id: 1 }),
     });
-    if (!insertRes.ok) {
-      throw new Error("Could not initialize business settings.");
-    }
-    const createdRows = (await insertRes.json()) as SettingsRow[];
-    const created = createdRows[0];
-    if (!created) {
-      throw new Error("Could not initialize business settings.");
-    }
+    if (!insertRes.ok) throw new Error("Could not initialize business settings.");
+    const created = ((await insertRes.json()) as SettingsRow[])[0];
+    if (!created) throw new Error("Could not initialize business settings.");
     return mapRowToSettings(created, null);
   }
 
-  const signatureDataUrl = await fetchSignatureDataUrl(
-    baseUrl,
-    serviceKey,
-    row.signature_storage_path
-  );
-
+  const signatureDataUrl = await fetchSignatureDataUrl(baseUrl, serviceKey, row.signature_storage_path);
   return mapRowToSettings(row, signatureDataUrl);
 }
 
-/**
- * Saves the single settings row (id = 1) in Supabase.
- */
 export async function saveBusinessSettings(
   input: Omit<BusinessSettings, "signatureDataUrl">
 ): Promise<BusinessSettings> {
   const { baseUrl, serviceKey } = getSupabaseConfig();
-
   const payload = {
     id: 1,
     company_name: input.companyName.trim(),
@@ -255,22 +173,106 @@ export async function saveBusinessSettings(
     }),
     body: JSON.stringify(payload),
   });
+  if (!res.ok) throw new Error("Could not save business settings.");
+  const updatedRow = ((await res.json()) as SettingsRow[])[0];
+  if (!updatedRow) throw new Error("Could not save business settings.");
 
-  if (!res.ok) {
-    throw new Error("Could not save business settings.");
-  }
-
-  const rows = (await res.json()) as SettingsRow[];
-  const updatedRow = rows[0];
-  if (!updatedRow) {
-    throw new Error("Could not save business settings.");
-  }
-
-  const signatureDataUrl = await fetchSignatureDataUrl(
-    baseUrl,
-    serviceKey,
-    updatedRow.signature_storage_path
-  );
-
+  const signatureDataUrl = await fetchSignatureDataUrl(baseUrl, serviceKey, updatedRow.signature_storage_path);
   return mapRowToSettings(updatedRow, signatureDataUrl);
+}
+
+function mapRowToQuotation(row: QuotationRow): Quotation {
+  return {
+    id: row.id,
+    quotationNumber: row.quotation_number ?? null,
+    buyerName: row.buyer_name ?? "",
+    buyerAddress: row.buyer_address ?? "",
+    quotationDate: row.quotation_date ?? "",
+    items: Array.isArray(row.items) ? row.items : [],
+    totalPaise: Number(row.total_paise ?? 0),
+    createdAt: row.created_at ?? new Date().toISOString(),
+  };
+}
+
+export async function listQuotationsFromDb(): Promise<Quotation[]> {
+  const { baseUrl, serviceKey } = getSupabaseConfig();
+  const res = await fetch(
+    `${baseUrl}/rest/v1/quotations?select=*&order=created_at.desc&limit=250`,
+    { headers: getAuthHeaders(serviceKey), cache: "no-store" }
+  );
+  if (!res.ok) throw new Error("Could not load saved quotations.");
+  const rows = (await res.json()) as QuotationRow[];
+  return rows.map(mapRowToQuotation);
+}
+
+export async function getQuotationByIdFromDb(id: string): Promise<Quotation | null> {
+  const { baseUrl, serviceKey } = getSupabaseConfig();
+  const res = await fetch(
+    `${baseUrl}/rest/v1/quotations?id=eq.${encodeURIComponent(id)}&select=*`,
+    { headers: getAuthHeaders(serviceKey), cache: "no-store" }
+  );
+  if (!res.ok) throw new Error("Could not load quotation.");
+  const first = ((await res.json()) as QuotationRow[])[0];
+  return first ? mapRowToQuotation(first) : null;
+}
+
+export async function createQuotationInDb(input: {
+  quotationNumber: string | null;
+  buyerName: string;
+  buyerAddress: string;
+  quotationDate: string;
+  items: QuotationItem[];
+  totalPaise: number;
+}): Promise<Quotation> {
+  const { baseUrl, serviceKey } = getSupabaseConfig();
+  const res = await fetch(`${baseUrl}/rest/v1/quotations`, {
+    method: "POST",
+    headers: getAuthHeaders(serviceKey, { "Content-Type": "application/json", Prefer: "return=representation" }),
+    body: JSON.stringify({
+      quotation_number: input.quotationNumber,
+      buyer_name: input.buyerName.trim(),
+      buyer_address: input.buyerAddress.trim(),
+      quotation_date: input.quotationDate,
+      items: input.items,
+      total_paise: input.totalPaise,
+    }),
+  });
+  if (!res.ok) throw new Error("Could not save quotation.");
+  const created = ((await res.json()) as QuotationRow[])[0];
+  if (!created) throw new Error("Could not save quotation.");
+  return mapRowToQuotation(created);
+}
+
+export async function updateQuotationInDb(
+  id: string,
+  input: {
+    quotationNumber: string | null;
+    buyerName: string;
+    buyerAddress: string;
+    quotationDate: string;
+    items: QuotationItem[];
+    totalPaise: number;
+  }
+): Promise<Quotation> {
+  const { baseUrl, serviceKey } = getSupabaseConfig();
+  const res = await fetch(
+    `${baseUrl}/rest/v1/quotations?id=eq.${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(serviceKey, { "Content-Type": "application/json", Prefer: "return=representation" }),
+      body: JSON.stringify({
+        quotation_number: input.quotationNumber,
+        buyer_name: input.buyerName.trim(),
+        buyer_address: input.buyerAddress.trim(),
+        quotation_date: input.quotationDate,
+        items: input.items,
+        total_paise: input.totalPaise,
+        updated_at: new Date().toISOString(),
+      }),
+    }
+  );
+  if (!res.ok) throw new Error("Could not update quotation.");
+  const updated = ((await res.json()) as QuotationRow[])[0];
+  if (!updated) throw new Error("Quotation not found.");
+  return mapRowToQuotation(updated);
 }

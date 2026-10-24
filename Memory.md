@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 5 (The sporty PDF engine) — all 9 tasks, 21 automatic tests, and build finished; ready for Munavar to check on his phone
-- **File or task being worked on right now:** Waiting for Munavar to check Phase 5 on his phone
-- **Next task:** Phase 6 (Create PDF, preview, and share) once Munavar confirms Phase 5
+- **Current phase:** Phase 7 (Save and history) — all 5 tasks finished and tested; ready for Munavar to check on his phone
+- **File or task being worked on right now:** Waiting for Munavar to check Phase 7 on his phone
+- **Next task:** Phase 8, task 1 (Quotation number on/off button `src/components/NumberToggle.tsx` and `/api/next-number`) once Munavar confirms Phase 7
 
 ## Completed
 (nothing yet)
@@ -64,6 +64,12 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 5, task 7: Implemented multi-page pagination (`src/lib/pdf/layout.ts`) with slim header ("QUOTATION (continued)"), repeated table header, atomic closing block, and "Page X of Y".
 - [x] Phase 5, task 8: Built `src/components/PdfPreview.tsx` with the sample PDF test bench for 1, 5, 14, 15, 50, and 100 items, plus live preview, download, and share actions.
 - [x] Phase 5, task 9: Added automatic pagination and PDF generation tests (`tests/pagination.test.ts`) for 1, 5, 14, 15, 50, and 100 items and long wrapped item names.
+- [x] Phase 6, tasks 1–4: Connected the Create PDF button, progress indicator, inline PDF preview, Save to Phone download, and native Web Share (`navigator.share`) in `src/components/PdfPreview.tsx` and `src/app/new/page.tsx`.
+- [x] Phase 7, task 1: Implemented server database helpers (`listQuotationsFromDb`, `getQuotationByIdFromDb`, `createQuotationInDb`, `updateQuotationInDb` in `src/lib/db/supabaseServer.ts`) and API routes (`src/app/api/quotations/route.ts` and `src/app/api/quotations/[id]/route.ts`), saving quotations when Create PDF is tapped.
+- [x] Phase 7, task 2: Updated the Home screen (`src/app/page.tsx`) to show saved quotations newest first with buyer name, date, item count, total, and quotation number badge.
+- [x] Phase 7, task 3: Added search by buyer name or date on the Home screen (`src/app/page.tsx`).
+- [x] Phase 7, task 4: Built the saved quotation view/edit/re-create PDF screen (`src/app/q/[id]/page.tsx`).
+- [x] Phase 7, task 5: Added Duplicate buttons on both the Home screen and `/q/[id]` to copy a saved quotation into a fresh draft on `/new`.
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.
