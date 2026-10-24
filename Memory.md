@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 2 (Business settings) — all 4 tasks, tests, and build finished; ready for Munavar to fill in and check on his phone
-- **File or task being worked on right now:** Waiting for Munavar to check Phase 2 on his phone
-- **Next task:** Phase 3, task 1 (`formatMoney`: whole paise in, Indian-style display out) once Munavar confirms Phase 2
+- **Current phase:** Phase 3 (Money and text-reading foundations) — COMPLETED (all 4 tasks and 16 automatic tests passing)
+- **File or task being worked on right now:** Waiting for Munavar's approval to start Phase 4 (New quotation and the item list)
+- **Next task:** Phase 4, task 1 (New Quotation screen with buyer name, buyer address, and date)
 
 ## Completed
 (nothing yet)
@@ -42,6 +42,10 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 2, task 2: Implemented browser canvas signature & stamp paper-background removal (`src/lib/image/shrinkPhoto.ts`) with adjustable strength slider and live preview on white.
 - [x] Phase 2, task 3: Implemented server-only Supabase settings read/write and private `signatures` storage bucket upload/download (`src/lib/db/supabaseServer.ts` and `src/app/api/settings/route.ts`).
 - [x] Phase 2, task 4: Added the footer slogan line ("PLAY HARD. PLAY FAIR.") as an editable setting in `settings`.
+- [x] Phase 3, task 1: Implemented `formatMoney`, `formatMoneyWithRs`, `rupeesToPaise`, and integer paise totals in `src/lib/money/formatMoney.ts`.
+- [x] Phase 3, task 2: Implemented Indian-system `amountInWords` and `rupeesInWords` in `src/lib/money/amountInWords.ts`.
+- [x] Phase 3, task 3: Implemented `parseTextList` in `src/lib/parse/parseTextList.ts` and equipment icon word-matching `matchIconKey` in `src/lib/pdf/icons.ts`.
+- [x] Phase 3, task 4: Added automatic Vitest tests in `tests/amountInWords.test.ts` and `tests/parseTextList.test.ts` covering `formatMoney`, `amountInWords` (small numbers, thousands, lakhs, crores, paise, and 4210 -> "Rupees Four Thousand Two Hundred Ten Only"), and `parseTextList` (clean and messy inputs).
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.
