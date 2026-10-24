@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 3 (Money and text-reading foundations) — COMPLETED (all 4 tasks and 16 automatic tests passing)
-- **File or task being worked on right now:** Waiting for Munavar's approval to start Phase 4 (New quotation and the item list)
-- **Next task:** Phase 4, task 1 (New Quotation screen with buyer name, buyer address, and date)
+- **Current phase:** Phase 4 (New quotation and the item list) — all 9 tasks, 17 automatic tests, and build finished; ready for Munavar to check on his phone
+- **File or task being worked on right now:** Waiting for Munavar to check Phase 4 on his phone
+- **Next task:** Phase 5, task 1 (`theme.ts` with the colors and sizes from Design.md) once Munavar confirms Phase 4
 
 ## Completed
 (nothing yet)
@@ -46,6 +46,15 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 3, task 2: Implemented Indian-system `amountInWords` and `rupeesInWords` in `src/lib/money/amountInWords.ts`.
 - [x] Phase 3, task 3: Implemented `parseTextList` in `src/lib/parse/parseTextList.ts` and equipment icon word-matching `matchIconKey` in `src/lib/pdf/icons.ts`.
 - [x] Phase 3, task 4: Added automatic Vitest tests in `tests/amountInWords.test.ts` and `tests/parseTextList.test.ts` covering `formatMoney`, `amountInWords` (small numbers, thousands, lakhs, crores, paise, and 4210 -> "Rupees Four Thousand Two Hundred Ten Only"), and `parseTextList` (clean and messy inputs).
+- [x] Phase 4, task 1: Built `src/components/BuyerForm.tsx` with buyer name, buyer address, and date (defaulting to today).
+- [x] Phase 4, task 2: Built `src/components/TextPaste.tsx` that fills or appends to the item list using `parseTextList`.
+- [x] Phase 4, task 3: Built the flat item review list (`src/components/ItemRow.tsx` and `src/components/ItemList.tsx`) showing serial number, name, quantity, unit price, and amount.
+- [x] Phase 4, task 4: Built the bottom-sheet row editor to edit fields, delete, add, move up or down, and add an optional note line under an item.
+- [x] Phase 4, task 5: Added the sticky search box above the item list.
+- [x] Phase 4, task 6: Highlighted rows that need attention (missing price or unclear reading) with `#FFF0E5` tint, left orange border, and `Check` badge.
+- [x] Phase 4, task 7: Built `src/components/TotalBar.tsx` with live grand total, Indian amount in words, and missing-price check before PDF creation.
+- [x] Phase 4, task 8: Built `src/lib/draft/draftStore.ts` and connected auto-save in `src/app/new/page.tsx`.
+- [x] Phase 4, task 9: Added list virtualization with `@tanstack/react-virtual` in `src/components/ItemList.tsx` so 100 rows scroll smoothly on a phone.
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.

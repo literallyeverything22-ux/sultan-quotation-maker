@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { isItemNeedingAttention } from "@/components/ItemRow";
 import { parseTextList } from "@/lib/parse/parseTextList";
 
 describe("Phase 3: parseTextList", () => {
@@ -111,5 +112,20 @@ describe("Phase 3: parseTextList", () => {
       unitPricePaise: 85000,
       needsReview: true,
     });
+    expect(isItemNeedingAttention(items[1]!)).toBe(true);
+    expect(isItemNeedingAttention(items[0]!)).toBe(false);
+  });
+
+  it("parses 100 pasted lines into 100 rows cleanly", () => {
+    const lines = Array.from(
+      { length: 100 },
+      (_, idx) => `${idx + 1}. Cosco Volleyball #${idx + 1} - 750`
+    ).join("\n");
+
+    const items = parseTextList(lines);
+    expect(items).toHaveLength(100);
+    expect(items[0]?.name).toBe("Cosco Volleyball #1");
+    expect(items[99]?.name).toBe("Cosco Volleyball #100");
+    expect(items[99]?.unitPricePaise).toBe(75000);
   });
 });

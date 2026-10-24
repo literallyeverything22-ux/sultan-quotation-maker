@@ -14,10 +14,31 @@ import {
   createSessionToken,
   getAttemptCookieOptions,
   getSessionCookieOptions,
+  getSessionFromCookies,
   PIN_ATTEMPTS_COOKIE_NAME,
   SESSION_COOKIE_NAME,
   verifyAttemptToken,
 } from "@/lib/auth/session";
+
+export async function GET(): Promise<
+  NextResponse<ApiResponse<{ role: SessionRole }>>
+> {
+  const session = await getSessionFromCookies();
+  if (!session) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Please enter the PIN first.",
+      },
+      { status: 401 }
+    );
+  }
+  return NextResponse.json({
+    ok: true,
+    data: { role: session.role },
+  });
+}
 
 const authRequestSchema = z.object({
   pin: z.string().regex(/^\d{4}$/, "Please enter a 4-digit PIN."),
