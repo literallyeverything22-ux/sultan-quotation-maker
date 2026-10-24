@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { isItemNeedingAttention } from "@/components/ItemRow";
+import {
+  aiItemsReplySchema,
+  mapAiItemsToQuotationItems,
+} from "@/lib/ai/itemSchema";
 import { parseTextList } from "@/lib/parse/parseTextList";
 
 describe("Phase 3: parseTextList", () => {
@@ -127,5 +131,44 @@ describe("Phase 3: parseTextList", () => {
     expect(items[0]?.name).toBe("Cosco Volleyball #1");
     expect(items[99]?.name).toBe("Cosco Volleyball #100");
     expect(items[99]?.unitPricePaise).toBe(75000);
+  });
+
+  it("validates AI photo-reading replies strictly and flags low-confidence or missing-price items", () => {
+    const validReply = aiItemsReplySchema.safeParse({
+      items: [
+        {
+          name: "Cosco Acclaim (Volleyball)",
+          quantity: 1,
+          unitPriceRupees: 750,
+          note: null,
+          confidence: "high",
+        },
+        {
+          name: "Handwritten Unclear Net",
+          quantity: 2,
+          unitPriceRupees: 1700,
+          note: null,
+          confidence: "low",
+        },
+        {
+          name: "Carrom Board Without Price",
+          quantity: 1,
+          unitPriceRupees: null,
+          note: "Comes with coins",
+          confidence: "high",
+        },
+      ],
+    });
+
+    expect(validReply.success).toBe(true);
+    if (!validReply.success) return;
+
+    const mapped = mapAiItemsToQuotationItems(validReply.data.items);
+    expect(mapped).toHaveLength(3);
+    expect(mapped[0]?.needsReview).toBe(false);
+    expect(mapped[0]?.unitPricePaise).toBe(75000);
+    expect(mapped[1]?.needsReview).toBe(true); // low confidence
+    expect(mapped[2]?.needsReview).toBe(true); // missing price
+    expect(mapped[2]?.unitPricePaise).toBeNull();
   });
 });

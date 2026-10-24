@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 7 (Save and history) — all 5 tasks finished and tested; ready for Munavar to check on his phone
-- **File or task being worked on right now:** Waiting for Munavar to check Phase 7 on his phone
-- **Next task:** Phase 8, task 1 (Quotation number on/off button `src/components/NumberToggle.tsx` and `/api/next-number`) once Munavar confirms Phase 7
+- **Current phase:** Phase 8 (Quotation number) and Phase 9 (Photo reading) — all code and tests finished; waiting for Munavar to add his free `GEMINI_API_KEY` in Vercel and test photo reading on his phone
+- **File or task being worked on right now:** Waiting for Munavar to add `GEMINI_API_KEY` and test Phase 8 & Phase 9 on his phone
+- **Next task:** Phase 10 (Polish and hardening) once Munavar tests photo reading
 
 ## Completed
 (nothing yet)
@@ -70,6 +70,8 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 7, task 3: Added search by buyer name or date on the Home screen (`src/app/page.tsx`).
 - [x] Phase 7, task 4: Built the saved quotation view/edit/re-create PDF screen (`src/app/q/[id]/page.tsx`).
 - [x] Phase 7, task 5: Added Duplicate buttons on both the Home screen and `/q/[id]` to copy a saved quotation into a fresh draft on `/new`.
+- [x] Phase 8, tasks 1–5: Built `src/components/NumberToggle.tsx` and `src/app/api/next-number/route.ts` (previewing next number on GET and atomically claiming via `claim_next_quotation_number()` on POST only when Create PDF is tapped, without ever claiming a second number on retry).
+- [x] Phase 9, tasks 1–6: Built `src/components/PhotoPicker.tsx`, `src/lib/ai/itemSchema.ts`, `src/lib/ai/prompt.ts`, `src/lib/ai/readItemsFromImage.ts`, and `src/app/api/read-items/route.ts` for camera/gallery photo shrinking, multi-photo progress bar ("Reading photo 1 of 2..."), strict Zod validation, uncertain-item highlighting, and privacy-safe requests.
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.

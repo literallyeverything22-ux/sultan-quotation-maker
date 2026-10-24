@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import type { ApiResponse, Quotation, QuotationItem } from "@/types/quotation";
 import { BuyerForm } from "@/components/BuyerForm";
 import { ItemList } from "@/components/ItemList";
+import { NumberToggle } from "@/components/NumberToggle";
 import { PdfPreview } from "@/components/PdfPreview";
+import { PhotoPicker } from "@/components/PhotoPicker";
 import { TextPaste } from "@/components/TextPaste";
 import { TotalBar } from "@/components/TotalBar";
 import {
@@ -24,6 +26,7 @@ export default function NewQuotationPage() {
     createEmptyDraft().quotationDate
   );
   const [numberEnabled, setNumberEnabled] = useState<boolean>(false);
+  const [assignedNumber, setAssignedNumber] = useState<string | null>(null);
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [confirmClear, setConfirmClear] = useState<boolean>(false);
@@ -80,14 +83,14 @@ export default function NewQuotationPage() {
       setQuotationDate(updates.quotationDate);
   };
 
-  const handleItemsParsed = (
-    parsedItems: QuotationItem[],
+  const handleItemsAdded = (
+    newItems: QuotationItem[],
     mode: "replace" | "append"
   ) => {
     if (mode === "replace") {
-      setItems(parsedItems);
+      setItems(newItems);
     } else {
-      setItems((prev) => [...prev, ...parsedItems]);
+      setItems((prev) => [...prev, ...newItems]);
     }
   };
 
@@ -102,6 +105,7 @@ export default function NewQuotationPage() {
     setBuyerAddress(fresh.buyerAddress);
     setQuotationDate(fresh.quotationDate);
     setNumberEnabled(fresh.numberEnabled);
+    setAssignedNumber(null);
     setItems([]);
     setSavedQuotationId(null);
     setSaveNotice(null);
@@ -109,11 +113,31 @@ export default function NewQuotationPage() {
   };
 
   const handleCreatePdfAndSave = async () => {
-    setBuildRequestCounter((prev) => prev + 1);
     setIsSaving(true);
     setSaveNotice(null);
 
     try {
+      // 1. If numbering is ON and we have not claimed a number yet, claim it once now
+      let numberToUse: string | null = numberEnabled ? assignedNumber : null;
+      if (numberEnabled && !numberToUse) {
+        const numRes = await fetch("/api/next-number", { method: "POST" });
+        const numPayload = (await numRes.json()) as ApiResponse<{
+          quotationNumber: string;
+          numericValue: number;
+        }>;
+        if (!numPayload.ok) {
+          setSaveNotice({ type: "error", text: numPayload.message });
+          setIsSaving(false);
+          return;
+        }
+        numberToUse = numPayload.data.quotationNumber;
+        setAssignedNumber(numberToUse);
+      }
+
+      // 2. Trigger the PDF builder on the phone with the final number (or null)
+      setBuildRequestCounter((prev) => prev + 1);
+
+      // 3. Save or update the quotation in Supabase
       const endpoint = savedQuotationId
         ? `/api/quotations/${savedQuotationId}`
         : "/api/quotations";
@@ -123,6 +147,7 @@ export default function NewQuotationPage() {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          quotationNumber: numberToUse,
           buyerName: buyerName.trim() || "The Superintendent",
           buyerAddress: buyerAddress.trim(),
           quotationDate,
@@ -138,15 +163,15 @@ export default function NewQuotationPage() {
         setSavedQuotationId(payload.data.id);
         setSaveNotice({
           type: "success",
-          text: "Quotation saved to history and PDF ready below.",
+          text: numberToUse
+            ? `Saved as ${numberToUse} — PDF ready below.`
+            : "Quotation saved to history and PDF ready below.",
         });
       } else {
-        setSaveNotice({
-          type: "error",
-          text: payload.message,
-        });
+        setSaveNotice({ type: "error", text: payload.message });
       }
     } catch {
+      setBuildRequestCounter((prev) => prev + 1);
       setSaveNotice({
         type: "error",
         text: "Could not save to cloud right now, but your PDF and phone draft are ready.",
@@ -209,9 +234,20 @@ export default function NewQuotationPage() {
           onChange={handleBuyerChange}
         />
 
+        <NumberToggle
+          enabled={numberEnabled}
+          assignedNumber={assignedNumber}
+          onChange={setNumberEnabled}
+        />
+
         <TextPaste
-          onItemsParsed={handleItemsParsed}
+          onItemsParsed={handleItemsAdded}
           hasExistingItems={items.length > 0}
+        />
+
+        <PhotoPicker
+          hasExistingItems={items.length > 0}
+          onItemsRead={handleItemsAdded}
         />
 
         <ItemList items={items} onChange={setItems} />
@@ -220,6 +256,7 @@ export default function NewQuotationPage() {
           buyerName={buyerName}
           buyerAddress={buyerAddress}
           quotationDate={quotationDate}
+          quotationNumber={numberEnabled ? assignedNumber : null}
           items={items}
           buildRequestCounter={buildRequestCounter}
         />

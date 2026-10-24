@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import type { ApiResponse, Quotation, QuotationItem } from "@/types/quotation";
 import { BuyerForm } from "@/components/BuyerForm";
 import { ItemList } from "@/components/ItemList";
+import { NumberToggle } from "@/components/NumberToggle";
 import { PdfPreview } from "@/components/PdfPreview";
+import { PhotoPicker } from "@/components/PhotoPicker";
 import { TextPaste } from "@/components/TextPaste";
 import { TotalBar } from "@/components/TotalBar";
 import { createEmptyDraft, saveDraftToPhone } from "@/lib/draft/draftStore";
@@ -25,6 +27,7 @@ export default function QuotationDetailPage({
   const [buyerAddress, setBuyerAddress] = useState<string>("");
   const [quotationDate, setQuotationDate] = useState<string>("");
   const [quotationNumber, setQuotationNumber] = useState<string | null>(null);
+  const [numberEnabled, setNumberEnabled] = useState<boolean>(false);
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -52,6 +55,7 @@ export default function QuotationDetailPage({
           setBuyerAddress(payload.data.buyerAddress);
           setQuotationDate(payload.data.quotationDate);
           setQuotationNumber(payload.data.quotationNumber);
+          setNumberEnabled(Boolean(payload.data.quotationNumber));
           setItems(payload.data.items);
         } else {
           setNotice({ type: "error", text: payload.message });
@@ -85,7 +89,7 @@ export default function QuotationDetailPage({
       setQuotationDate(updates.quotationDate);
   };
 
-  const handleItemsParsed = (
+  const handleItemsAdded = (
     parsedItems: QuotationItem[],
     mode: "replace" | "append"
   ) => {
@@ -97,16 +101,33 @@ export default function QuotationDetailPage({
   };
 
   const handleSaveAndCreatePdf = async () => {
-    setBuildRequestCounter((prev) => prev + 1);
     setIsSaving(true);
     setNotice(null);
 
     try {
+      let numberToUse: string | null = numberEnabled ? quotationNumber : null;
+      if (numberEnabled && !numberToUse) {
+        const numRes = await fetch("/api/next-number", { method: "POST" });
+        const numPayload = (await numRes.json()) as ApiResponse<{
+          quotationNumber: string;
+          numericValue: number;
+        }>;
+        if (!numPayload.ok) {
+          setNotice({ type: "error", text: numPayload.message });
+          setIsSaving(false);
+          return;
+        }
+        numberToUse = numPayload.data.quotationNumber;
+        setQuotationNumber(numberToUse);
+      }
+
+      setBuildRequestCounter((prev) => prev + 1);
+
       const res = await fetch(`/api/quotations/${encodeURIComponent(id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          quotationNumber,
+          quotationNumber: numberToUse,
           buyerName: buyerName.trim() || "The Superintendent",
           buyerAddress: buyerAddress.trim(),
           quotationDate,
@@ -127,6 +148,7 @@ export default function QuotationDetailPage({
         setNotice({ type: "error", text: payload.message });
       }
     } catch {
+      setBuildRequestCounter((prev) => prev + 1);
       setNotice({
         type: "error",
         text: "Could not save changes to the cloud right now, but your updated PDF is ready below.",
@@ -209,9 +231,20 @@ export default function QuotationDetailPage({
           onChange={handleBuyerChange}
         />
 
+        <NumberToggle
+          enabled={numberEnabled}
+          assignedNumber={quotationNumber}
+          onChange={setNumberEnabled}
+        />
+
         <TextPaste
-          onItemsParsed={handleItemsParsed}
+          onItemsParsed={handleItemsAdded}
           hasExistingItems={items.length > 0}
+        />
+
+        <PhotoPicker
+          hasExistingItems={items.length > 0}
+          onItemsRead={handleItemsAdded}
         />
 
         <ItemList items={items} onChange={setItems} />
@@ -220,7 +253,7 @@ export default function QuotationDetailPage({
           buyerName={buyerName}
           buyerAddress={buyerAddress}
           quotationDate={quotationDate}
-          quotationNumber={quotationNumber}
+          quotationNumber={numberEnabled ? quotationNumber : null}
           items={items}
           buildRequestCounter={buildRequestCounter}
         />
