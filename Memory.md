@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 1 (PIN access) — COMPLETED and verified live on `https://sultan-quotation-maker.vercel.app`
-- **File or task being worked on right now:** Waiting for Munavar's approval to start Phase 2 (Business settings)
-- **Next task:** Phase 2, task 1 (Settings screen with: company name, tagline, address lines, phone numbers, GSTIN, bank details, quotation number prefix)
+- **Current phase:** Phase 2 (Business settings) — all 4 tasks, tests, and build finished; ready for Munavar to fill in and check on his phone
+- **File or task being worked on right now:** Waiting for Munavar to check Phase 2 on his phone
+- **Next task:** Phase 3, task 1 (`formatMoney`: whole paise in, Indian-style display out) once Munavar confirms Phase 2
 
 ## Completed
 (nothing yet)
@@ -38,6 +38,10 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 1, task 4: Added Owner PIN verification (`mode="owner"`) for unlocking the Business Settings area.
 - [x] Phase 1, task 5: Protected every page (`page.tsx`, `new/page.tsx`, `q/[id]/page.tsx`, `settings/page.tsx`) and every server API route (`read-items`, `quotations`, `quotations/[id]`, `next-number`, `settings`), and added unit tests for PIN verification, 5-try lockout, and signed session tokens.
 - [x] Phase 1 live verification: Verified on `https://sultan-quotation-maker.vercel.app` that unauthenticated requests redirect to `/pin`, wrong PIN is refused, Staff PIN opens the home screen (`STAFF ACCESS`) and is blocked from `/settings`, and Owner PIN unlocks `/settings` (`OWNER ONLY — UNLOCKED`).
+- [x] Phase 2, task 1: Built the Owner Business Settings screen (`src/app/settings/page.tsx`) with company name, tagline, address lines 1 & 2, phone numbers, GSTIN, bank details (Bank Name, A/C Holder, A/C Number, IFSC Code, Branch Code), and quotation number prefix.
+- [x] Phase 2, task 2: Implemented browser canvas signature & stamp paper-background removal (`src/lib/image/shrinkPhoto.ts`) with adjustable strength slider and live preview on white.
+- [x] Phase 2, task 3: Implemented server-only Supabase settings read/write and private `signatures` storage bucket upload/download (`src/lib/db/supabaseServer.ts` and `src/app/api/settings/route.ts`).
+- [x] Phase 2, task 4: Added the footer slogan line ("PLAY HARD. PLAY FAIR.") as an editable setting in `settings`.
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.

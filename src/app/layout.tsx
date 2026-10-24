@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { getBusinessSettings } from "@/lib/db/supabaseServer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,14 +24,24 @@ interface RootLayoutProps {
   children: React.ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  let headerTitle = "QUOTATION MAKER";
+  try {
+    const settings = await getBusinessSettings();
+    if (settings.companyName.trim()) {
+      headerTitle = settings.companyName.trim().toUpperCase();
+    }
+  } catch {
+    // Fallback to default header title if database is unreachable
+  }
+
   return (
     <html lang="en">
       <body className="bg-sultan-white text-sultan-ink antialiased">
         <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-sultan-white">
-          <header className="relative flex h-14 items-center justify-between overflow-hidden bg-sultan-black px-4 border-b-4 border-sultan-orange">
-            <span className="z-10 text-lg font-bold italic tracking-wide text-sultan-white">
-              QUOTATION MAKER
+          <header className="relative flex h-14 items-center justify-between overflow-hidden border-b-4 border-sultan-orange bg-sultan-black px-4">
+            <span className="z-10 truncate pr-24 text-lg font-bold italic tracking-wide text-sultan-white">
+              {headerTitle}
             </span>
             {/* Sporty orange diagonal slash echoing the PDF header */}
             <div

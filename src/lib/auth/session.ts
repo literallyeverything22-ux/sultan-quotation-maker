@@ -148,18 +148,18 @@ export async function requirePageSession(
  * Protects a server API route.
  * Returns { ok: true, role } when allowed, or a 401/403 NextResponse when refused.
  */
-export async function requireApiSession(
+export async function requireApiSession<T = null>(
   requiredRole: SessionRole
 ): Promise<
   | { allowed: true; role: SessionRole }
-  | { allowed: false; response: NextResponse<ApiResponse<null>> }
+  | { allowed: false; response: NextResponse<ApiResponse<T>> }
 > {
   const session = await getSessionFromCookies();
 
   if (!session) {
     return {
       allowed: false,
-      response: NextResponse.json(
+      response: NextResponse.json<ApiResponse<T>>(
         {
           ok: false,
           code: "UNAUTHORIZED",
@@ -173,7 +173,7 @@ export async function requireApiSession(
   if (requiredRole === "owner" && session.role !== "owner") {
     return {
       allowed: false,
-      response: NextResponse.json(
+      response: NextResponse.json<ApiResponse<T>>(
         {
           ok: false,
           code: "FORBIDDEN",

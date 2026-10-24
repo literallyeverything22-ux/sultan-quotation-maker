@@ -8,6 +8,7 @@ import {
   verifyPinAgainstHashes,
 } from "@/lib/auth/pin";
 import { createSessionToken, verifySessionToken } from "@/lib/auth/session";
+import { cleanSignaturePixels } from "@/lib/image/shrinkPhoto";
 
 describe("Phase 1 PIN & Session Security", () => {
   const staffHash = bcrypt.hashSync("1234", 4);
@@ -83,5 +84,20 @@ describe("Phase 1 PIN & Session Security", () => {
 
     const tampered = await verifySessionToken(staffToken + "x", testSecret);
     expect(tampered).toBeNull();
+  });
+
+  it("removes paper background while keeping signature and stamp ink", () => {
+    // 2 pixels: pixel 0 is white paper (245, 245, 242, 255), pixel 1 is blue stamp ink (20, 60, 180, 255)
+    const pixels = new Uint8ClampedArray([
+      245, 245, 242, 255,
+      20, 60, 180, 255,
+    ]);
+
+    cleanSignaturePixels(pixels, 205);
+
+    // Paper pixel alpha becomes 0 (transparent)
+    expect(pixels[3]).toBe(0);
+    // Blue stamp ink pixel alpha stays 255 (opaque)
+    expect(pixels[7]).toBe(255);
   });
 });

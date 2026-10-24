@@ -53,6 +53,8 @@ export interface BusinessSettings {
   gstin: string;
   bankDetails: BankDetails;
   signatureStoragePath: string | null;
+  /** Transparent PNG data URL loaded by the server from private Supabase Storage. */
+  signatureDataUrl?: string | null;
   numberPrefix: string;
   footerSlogan: string;
 }
