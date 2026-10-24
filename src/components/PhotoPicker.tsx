@@ -45,7 +45,7 @@ export function PhotoPicker({
 
       try {
         // 1. Shrink photo on the phone so uploads are fast and light
-        const shrunk = await shrinkPhoto(file, 2000);
+        const shrunk = await shrinkPhoto(file, 1600);
         const shrunkDataUrl = `data:${shrunk.mimeType};base64,${shrunk.base64}`;
 
         // 2. Send only the shrunk photo to /api/read-items

@@ -161,42 +161,75 @@ export async function prepareSignatureImage(
   return croppedCanvas.toDataURL("image/png");
 }
 
+function readFileAsDataUrlFallback(file: File): Promise<{
+  base64: string;
+  mimeType: string;
+}> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]+)$/.exec(
+        result
+      );
+      if (match && match[1] && match[2]) {
+        resolve({
+          mimeType: match[1],
+          base64: match[2].replace(/\s+/g, ""),
+        });
+      } else {
+        reject(new Error("Could not read image file."));
+      }
+    };
+    reader.onerror = () => reject(new Error("Could not read image file."));
+    reader.readAsDataURL(file);
+  });
+}
+
 /**
- * Shrinks a photo on the phone (long side around 2000 pixels) before sending to AI.
+ * Shrinks a photo on the phone (long side around 1600 pixels) before sending to AI.
  */
 export async function shrinkPhoto(
   file: File,
-  maxLongSide: number = 2000
-): Promise<{ base64: string; mimeType: "image/jpeg" }> {
-  const img = await loadImageFromFile(file);
-  let width = img.naturalWidth || img.width;
-  let height = img.naturalHeight || img.height;
+  maxLongSide: number = 1600
+): Promise<{ base64: string; mimeType: string }> {
+  try {
+    const img = await loadImageFromFile(file);
+    let width = img.naturalWidth || img.width;
+    let height = img.naturalHeight || img.height;
 
-  if (width > maxLongSide || height > maxLongSide) {
-    if (width >= height) {
-      height = Math.round((height * maxLongSide) / width);
-      width = maxLongSide;
-    } else {
-      width = Math.round((width * maxLongSide) / height);
-      height = maxLongSide;
+    if (width > maxLongSide || height > maxLongSide) {
+      if (width >= height) {
+        height = Math.round((height * maxLongSide) / width);
+        width = maxLongSide;
+      } else {
+        width = Math.round((width * maxLongSide) / height);
+        height = maxLongSide;
+      }
     }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, width);
+    canvas.height = Math.max(1, height);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return readFileAsDataUrlFallback(file);
+    }
+
+    // Fill with white first so transparent PNG screenshots never turn black in JPEG
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+    const prefix = "data:image/jpeg;base64,";
+    const base64 = dataUrl.startsWith(prefix)
+      ? dataUrl.slice(prefix.length)
+      : dataUrl;
+
+    return { base64, mimeType: "image/jpeg" };
+  } catch {
+    return readFileAsDataUrlFallback(file);
   }
-
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, width);
-  canvas.height = Math.max(1, height);
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    throw new Error("Browser canvas is not available.");
-  }
-
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-  const prefix = "data:image/jpeg;base64,";
-  const base64 = dataUrl.startsWith(prefix)
-    ? dataUrl.slice(prefix.length)
-    : dataUrl;
-
-  return { base64, mimeType: "image/jpeg" };
 }

@@ -4,6 +4,7 @@ import {
   aiItemsReplySchema,
   mapAiItemsToQuotationItems,
 } from "@/lib/ai/itemSchema";
+import { extractJsonFromAiText } from "@/lib/ai/readItemsFromImage";
 import { parseTextList } from "@/lib/parse/parseTextList";
 
 describe("Phase 3: parseTextList", () => {
@@ -170,5 +171,23 @@ describe("Phase 3: parseTextList", () => {
     expect(mapped[1]?.needsReview).toBe(true); // low confidence
     expect(mapped[2]?.needsReview).toBe(true); // missing price
     expect(mapped[2]?.unitPricePaise).toBeNull();
+  });
+
+  it("extracts JSON even when wrapped in prose and coerces stringified prices or arrays", () => {
+    const raw =
+      'Here are the items:\n```json\n[{"name":"Volleyball Net (Gupta)","quantity":"1","unitPriceRupees":"Rs. 1,700/-","confidence":"medium"}]\n```';
+    const extracted = extractJsonFromAiText(raw);
+    const parsed = aiItemsReplySchema.safeParse(extracted);
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+
+    const mapped = mapAiItemsToQuotationItems(parsed.data.items);
+    expect(mapped[0]).toMatchObject({
+      name: "Volleyball Net (Gupta)",
+      quantity: 1,
+      unitPricePaise: 170000,
+      iconKey: "net",
+      needsReview: true, // medium confidence -> low -> flagged to check
+    });
   });
 });

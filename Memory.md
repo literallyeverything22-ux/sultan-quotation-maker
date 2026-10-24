@@ -16,9 +16,9 @@ A phone-friendly web app that turns typed or photographed item lists into a prof
 Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf`
 
 ## Current status
-- **Current phase:** Phase 8 (Quotation number) and Phase 9 (Photo reading) — all code and tests finished; waiting for Munavar to add his free `GEMINI_API_KEY` in Vercel and test photo reading on his phone
-- **File or task being worked on right now:** Waiting for Munavar to add `GEMINI_API_KEY` and test Phase 8 & Phase 9 on his phone
-- **Next task:** Phase 10 (Polish and hardening) once Munavar tests photo reading
+- **Current phase:** Phase 9 (Photo reading) — fixed Gemini 2.5 thinking-part parsing, `x-goog-api-key` header format, automatic model fallback, and flexible Zod coercion; pushed to GitHub/Vercel for Munavar to test on his phone
+- **File or task being worked on right now:** Waiting for Munavar to test photo reading on his phone after the Gemini Vision fix
+- **Next task:** Phase 10 (Polish and hardening) once Munavar confirms photo reading works
 
 ## Completed
 (nothing yet)
@@ -72,6 +72,7 @@ Visual target for the PDF: `reference/Quotation_Sporty_Central_Prison_Kadapa.pdf
 - [x] Phase 7, task 5: Added Duplicate buttons on both the Home screen and `/q/[id]` to copy a saved quotation into a fresh draft on `/new`.
 - [x] Phase 8, tasks 1–5: Built `src/components/NumberToggle.tsx` and `src/app/api/next-number/route.ts` (previewing next number on GET and atomically claiming via `claim_next_quotation_number()` on POST only when Create PDF is tapped, without ever claiming a second number on retry).
 - [x] Phase 9, tasks 1–6: Built `src/components/PhotoPicker.tsx`, `src/lib/ai/itemSchema.ts`, `src/lib/ai/prompt.ts`, `src/lib/ai/readItemsFromImage.ts`, and `src/app/api/read-items/route.ts` for camera/gallery photo shrinking, multi-photo progress bar ("Reading photo 1 of 2..."), strict Zod validation, uncertain-item highlighting, and privacy-safe requests.
+- [x] Phase 9 Gemini Vision fix: Updated `src/lib/ai/readItemsFromImage.ts` to follow Google AI Studio docs (`x-goog-api-key` header, `inline_data`, filtering out Gemini 2.5 `thought: true` thinking parts before parsing JSON, and automatic fallback across Gemini models) and updated `src/lib/ai/itemSchema.ts` and `src/lib/image/shrinkPhoto.ts`.
 
 ## Decisions log (add new decisions at the bottom)
 1. Quotation number is optional, controlled by one on/off button. The number is handed out only when Create PDF is tapped.
