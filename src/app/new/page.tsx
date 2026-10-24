@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { QuotationItem } from "@/types/quotation";
 import { BuyerForm } from "@/components/BuyerForm";
 import { ItemList } from "@/components/ItemList";
+import { PdfPreview } from "@/components/PdfPreview";
 import { TextPaste } from "@/components/TextPaste";
 import { TotalBar } from "@/components/TotalBar";
 import {
@@ -26,7 +27,7 @@ export default function NewQuotationPage() {
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [confirmClear, setConfirmClear] = useState<boolean>(false);
-  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [buildRequestCounter, setBuildRequestCounter] = useState<number>(0);
 
   // Check session and load saved draft from the phone when opening the screen
   useEffect(() => {
@@ -79,7 +80,6 @@ export default function NewQuotationPage() {
     parsedItems: QuotationItem[],
     mode: "replace" | "append"
   ) => {
-    setInfoMessage(null);
     if (mode === "replace") {
       setItems(parsedItems);
     } else {
@@ -100,7 +100,6 @@ export default function NewQuotationPage() {
     setNumberEnabled(fresh.numberEnabled);
     setItems([]);
     setConfirmClear(false);
-    setInfoMessage(null);
   };
 
   return (
@@ -136,12 +135,6 @@ export default function NewQuotationPage() {
           </div>
         </div>
 
-        {infoMessage ? (
-          <div className="rounded-xl border-l-4 border-sultan-orange bg-sultan-lightGrey p-3 text-sm font-bold text-sultan-ink">
-            {infoMessage}
-          </div>
-        ) : null}
-
         <BuyerForm
           buyerName={buyerName}
           buyerAddress={buyerAddress}
@@ -155,15 +148,19 @@ export default function NewQuotationPage() {
         />
 
         <ItemList items={items} onChange={setItems} />
+
+        <PdfPreview
+          buyerName={buyerName}
+          buyerAddress={buyerAddress}
+          quotationDate={quotationDate}
+          items={items}
+          buildRequestCounter={buildRequestCounter}
+        />
       </div>
 
       <TotalBar
         items={items}
-        onCreatePdf={() =>
-          setInfoMessage(
-            "All items and totals are ready! The sporty PDF engine will be connected in Phases 5 and 6."
-          )
-        }
+        onCreatePdf={() => setBuildRequestCounter((prev) => prev + 1)}
       />
     </div>
   );

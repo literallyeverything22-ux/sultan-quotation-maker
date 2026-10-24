@@ -60,7 +60,7 @@ export default function SettingsPage() {
     let active = true;
     async function load() {
       try {
-        const res = await fetch("/api/settings", { cache: "no-store" });
+        const res = await fetch("/api/settings?ownerOnly=1", { cache: "no-store" });
         if (res.status === 401 || res.status === 403) {
           router.replace("/pin?mode=owner&next=/settings");
           return;

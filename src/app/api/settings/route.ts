@@ -38,10 +38,14 @@ const settingsInputSchema = z.object({
   clearSignature: z.boolean().optional(),
 });
 
-export async function GET(): Promise<
-  NextResponse<ApiResponse<BusinessSettings>>
-> {
-  const auth = await requireApiSession<BusinessSettings>("owner");
+export async function GET(
+  request: Request
+): Promise<NextResponse<ApiResponse<BusinessSettings>>> {
+  const url = new URL(request.url);
+  const ownerOnly = url.searchParams.get("ownerOnly") === "1";
+  const auth = await requireApiSession<BusinessSettings>(
+    ownerOnly ? "owner" : "staff"
+  );
   if (!auth.allowed) return auth.response;
 
   try {
